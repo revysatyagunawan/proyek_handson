@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "api/fortune-edge.js": {
-      "runtime": "edge",
-      "memory": 256
-    }
-  },
   "headers": [
     {
       "source": "/(.*)\\.jpg",
