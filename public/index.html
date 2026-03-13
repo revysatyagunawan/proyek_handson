@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Koleksi Foto Saya</title>
+</head>
+<body>
+    <h1>Koleksi Foto Saya</h1>
+    <div id="katalog" style="display: flex; gap: 20px;"></div>
+    
+    <footer style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px;">
+        <p id="fortune-edge"></p>
+        <p id="fortune-serverless"></p>
+        <p>*Klik gambar untuk melihat detail harga dan pencipta</p>
+    </footer>
+
+    <script>
+        async function init() {
+            const resKoleksi = await fetch('/api/get-koleksi');
+            const dataKoleksi = await resKoleksi.json();
+            const katalogDiv = document.getElementById('katalog');
+
+            dataKoleksi.forEach(item => {
+                const itemDiv = document.createElement('div');
+                const isVideo = item.path.endsWith('.mp4');
+                
+                // Jika file mp4, gunakan tag <video>, jika jpg gunakan <img>
+                const mediaTag = isVideo 
+                    ? `<video src="${item.path}" width="200" style="cursor: pointer;" onclick="fetchDetail(${item.id}, this.parentElement)" muted></video>`
+                    : `<img src="${item.path}" width="200" style="cursor: pointer;" onclick="fetchDetail(${item.id}, this.parentElement)">`;
+
+                itemDiv.innerHTML = `
+                    ${mediaTag}
+                    <h3>${item.judul}</h3>
+                    <div class="detail-container"></div>
+                `;
+                katalogDiv.appendChild(itemDiv);
+            });
+
+            const resEdge = await fetch('/api/fortune-edge.js');
+            const dataEdge = await resEdge.json();
+            document.getElementById('fortune-edge').innerText = `Edge: ${dataEdge.fortune}`;
+
+            const resServer = await fetch('/api/fortune.js');
+            const dataServer = await resServer.json();
+            document.getElementById('fortune-serverless').innerText = `Backend: ${dataServer.fortune}`;
+        }
+
+        async function fetchDetail(id, parentElement) {
+            const res = await fetch(`/api/get-detail?id=${id}`);
+            const detail = await res.json();
+            parentElement.querySelector('.detail-container').innerHTML = `
+                <p>Pencipta: ${detail.pencipta}</p>
+                <p>Tahun: ${detail.tahun}</p>
+                <p>Harga: Rp${detail.harga}</p>
+            `;
+        }
+
+        init();
+    </script>
+</body>
+</html>
